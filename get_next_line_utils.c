@@ -6,7 +6,7 @@
 /*   By: achancha <achancha@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/30 14:37:44 by achancha          #+#    #+#             */
-/*   Updated: 2026/10/30 17:42:45 by achancha         ###   ########.fr       */
+/*   Updated: 2026/10/30 20:24:56 by achancha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,6 +123,8 @@ int update_rest(char **rest)
 		free(result);
 	return (0);
 }
+
+
 
 int main()
 {
