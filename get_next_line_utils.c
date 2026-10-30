@@ -5,139 +5,134 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: achancha <achancha@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/10/29 10:23:43 by achancha          #+#    #+#             */
-/*   Updated: 2026/10/29 20:41:35 by achancha         ###   ########.fr       */
+/*   Created: 2026/10/30 14:37:44 by achancha          #+#    #+#             */
+/*   Updated: 2026/10/30 17:42:45 by achancha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 #include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
 #include <stdint.h>
-
-char	*ft_strchr(char *str, size_t n)
+#include <stdlib.h>
+#include <stddef.h>
+size_t	ft_strlen(const char *str)
 {
-	int i;
+	size_t	len;
 
-	i = 0;
-	while (i < n)
-	{
-		if (str[i] == '\n')
-			return (&str[i + 1]);
-		i++;
-	}
-	return (0);
+	len = 0;
+	while (str[len])
+		len++;
+	return (len);
 }
-size_t ft_strlen(char *str)
-{
-	size_t i;
 
+char	*ft_strchr(const char *str, char c)
+{
+	size_t	i;
+
+	if (!str)
+		return (NULL);
 	i = 0;
 	while (str[i])
+	{
+		if (str[i] == c)
+			return ((char *)&str[i]);
 		i++;
-	return (i);
+	}
+	return (NULL);
 }
 
-char	*ft_join(char *str, char *st)
+char	*ft_strjoin(char *str, char *str2)
 {
-	char	*res;
 	size_t	strlen;
-	size_t	stlen;
+	size_t	str2len;
+	char	*result;
 
+	if (!str || !str2)
+		return (NULL);
 	strlen = ft_strlen(str);
-	stlen = ft_strlen(st);
-	if ((strlen > SIZE_MAX - stlen) || (strlen + stlen == SIZE_MAX))
+	str2len = ft_strlen(str2);
+	if (strlen > SIZE_MAX - str2len -1)
 		return (NULL);
-	res = malloc(strlen + stlen + 1);
-	if (!res)
+	result = malloc(strlen + str2len + 1);
+	if (!result)
 		return (NULL);
-	res[strlen + stlen] = '\0';
-	while (stlen--)
-		res[strlen + stlen] = st[stlen];
+	result[strlen + str2len] = '\0';
+	while (str2len--)
+		result[strlen + str2len] = str2[str2len];
 	while (strlen--)
-		res[strlen] = str[strlen];
-	free(str);
-	return (res);
+		result[strlen] = str[strlen];
+	return (result);
 }
 
-void ft_rest(char **rest, char *s)
+char *extract_line(char *rest)
 {
 	size_t len;
-	char *rr;
+	char *line;
+	size_t	i;
 
-	rr = *rest;
-	len = ft_strlen(s);
-	*rest = malloc(len + 1);
+	if (!rest)
+		return (NULL);
+	len = 0;
+	if (ft_strchr(rest, '\n'))
+		len = ft_strchr(rest, '\n') - rest + 1;
+	else
+		len = ft_strlen(rest);
+	line = malloc(len + 1);
+	if (!line)
+		return (NULL);
+	i = 0;
+	while (i < len)
+	{
+		line[i] = rest[i];
+		i++;
+	}
+	line[i] = '\0';
+	return (line);
+}
+
+int update_rest(char **rest)
+{
+	char *result;
+	char *nl;
+	size_t len;
+	size_t i;
+
+	if (!rest || !*rest)
+		return (1);
+	nl = ft_strchr(*rest,'\n');
+	if ((!nl) || (ft_strlen(nl) == 1))
+	{
+		free(*rest);
+		*rest = NULL;
+		return (0);
+	}
+	result = *rest;
+	len = ft_strlen(nl) - 1;
+	(*rest) = malloc(len + 1);
 	if (!(*rest))
-		return (NULL);
-	free(rr);
+	{
+		*rest = result;
+		return 1;
+	}
 	(*rest)[len] = '\0';
-	while (len--)
-		(*rest)[len] = s[len];
-}
-
-char *ft_read(int fd, char *res, char **rest)
-{
-	ssize_t n;
-	char *s;
-	char *tmp;
-	char buffer[BUFFER_SIZE + 1];
-
-	while ((n = read(fd, buffer, BUFFER_SIZE)) > 0)
+	i = 0;
+	while (i < len)
 	{
-		buffer[n] = '\0';
-		if ((s = ft_strchr(buffer, n)) != 0)
-		{
-			ft_rest(rest ,s);
-			*s = '\0';
-			tmp = res;
-			res = ft_join(res, buffer);
-			if (!res)
-				return (tmp);
-			return (res);
-		}
-		tmp = res;
-		res = ft_join(res, buffer);
-		if (!res)
-			return (tmp);
+		(*rest)[i] = nl[i +1];
+		i++;
 	}
-	if (n == 0)
-		return (res);
-	if (n < 0)
-		return (NULL);
+		free(result);
+	return (0);
 }
 
-char *ft_mazal(char **rest, char res)
+int main()
 {
-	char *s;
+	char *rest;
 
-	s = ft_strchr(rest, ft_strlen(rest));
-	ft_rest(rest, s);
-}
-
-char *get_next_line(int fd)
-{
-	static char *rest;
-	char *res;
-	size_t rest_len;
-
-	res = malloc(1);
-	if (!res)
-		return (NULL);
-	res[0] = '\0';
-	if (rest != NULL)
-	{
-		rest_len = ft_strlen(rest);
-		if (ft_strchr(rest, rest_len) != 0)
-			return (ft_mazal(&rest, res));
-
-		res = ft_join(rest, res);
-	}
-	res = ft_read(fd, res, &rest);
-	return (res);
-}
-
-int	main(void)
-{
-	printf("%s\n", (char *)ft_strchr("abde\nchanchaf", 10));
-	printf("%s\n", ft_join("abderrahim", "chanchaf"));
+	rest = malloc(3);
+	rest[0] = 'A';
+	rest[1] = '\n';
+	rest[2] = 'B';
+	printf("%s",extract_line(rest));
+	update_rest(&rest);
+	printf("%s",rest);
 }
