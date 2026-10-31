@@ -6,7 +6,7 @@
 /*   By: achancha <achancha@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/30 14:37:44 by achancha          #+#    #+#             */
-/*   Updated: 2026/10/31 16:36:46 by achancha         ###   ########.fr       */
+/*   Updated: 2026/10/31 17:34:55 by achancha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,12 +93,30 @@ char	*extract_line(char *rest)
 	return (line);
 }
 
+char	*cprest(char *nl)
+{
+	char	*result;
+	size_t	len;
+	size_t	i;
+
+	len = ft_strlen(nl);
+	result = malloc(len);
+	if (!result)
+		return (NULL);
+	i = 0;
+	while (i < len - 1)
+	{
+		result[i] = nl[i + 1];
+		i++;
+	}
+	result[i] = '\0';
+	return (result);
+}
+
 int	update_rest(char **rest)
 {
 	char	*result;
 	char	*nl;
-	size_t	len;
-	size_t	i;
 
 	if (!rest || !*rest)
 		return (1);
@@ -110,21 +128,43 @@ int	update_rest(char **rest)
 		return (0);
 	}
 	result = *rest;
-	len = ft_strlen(nl) - 1;
-	(*rest) = malloc(len + 1);
+	*rest = cprest(nl);
 	if (!(*rest))
 	{
 		*rest = result;
 		return (1);
 	}
-	(*rest)[len] = '\0';
-	i = 0;
-	while (i < len)
-	{
-		(*rest)[i] = nl[i + 1];
-		i++;
-	}
 	free(result);
+	return (0);
+}
+
+int	add_buffer(char **rest, char *buffer)
+{
+	char *tmp;
+
+	if (!*rest)
+	{
+		*rest = malloc(1);
+		if (!*rest)
+			return (1);
+		(*rest)[0] = '\0';
+	}
+	tmp = ft_strjoin(*rest, buffer);
+	if (!tmp)
+		return (1);
+	free(*rest);
+	*rest = tmp;
+	return (0);
+}
+
+int	read_error(ssize_t n, char **rest)
+{
+	if (n < 0)
+	{
+		free(*rest);
+		*rest = NULL;
+		return (1);
+	}
 	return (0);
 }
 
@@ -132,47 +172,29 @@ int	read_line(int fd, char **rest)
 {
 	char	*buffer;
 	ssize_t	n;
-	char	*tmp;
 
 	buffer = malloc(BUFFER_SIZE + 1);
 	if (!buffer)
 		return (1);
-	while ((n = read(fd, buffer, BUFFER_SIZE)) > 0)
+	n = read(fd, buffer, BUFFER_SIZE);
+	while (n > 0)
 	{
 		buffer[n] = '\0';
-		if (*rest == NULL)
-		{
-			*rest = malloc(1);
-			if (!*rest)
-			{
-				free(buffer);
-				return (1);
-			}
-			(*rest)[0] = '\0';
-		}
-		tmp = ft_strjoin(*rest, buffer);
-		if (!tmp)
+		if (add_buffer(rest, buffer))
 		{
 			free(buffer);
 			return (1);
 		}
-		free(*rest);
-		*rest = tmp;
 		if (ft_strchr(*rest, '\n') != NULL)
 		{
 			free(buffer);
 			return (0);
 		}
+		n = read(fd, buffer, BUFFER_SIZE);
 	}
 	free(buffer);
-	if (n == 0)
-		return (0);
-	if (n < 0)
-	{
-		free(*rest);
-		*rest = NULL;
+	if (read_error(n, rest))
 		return (1);
-	}
 	return (0);
 }
 
