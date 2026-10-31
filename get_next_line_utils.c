@@ -6,14 +6,17 @@
 /*   By: achancha <achancha@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/30 14:37:44 by achancha          #+#    #+#             */
-/*   Updated: 2026/10/30 20:24:56 by achancha         ###   ########.fr       */
+/*   Updated: 2026/10/31 14:43:26 by achancha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <unistd.h>
+#include <sys/types.h>
 size_t	ft_strlen(const char *str)
 {
 	size_t	len;
@@ -124,17 +127,100 @@ int update_rest(char **rest)
 	return (0);
 }
 
+int read_line(int fd, char **rest)
+{
+	char *buffer;
+	ssize_t n;
+	char *tmp;
 
+	buffer = malloc(BUFFER_SIZE + 1);
+	if (!buffer)
+		return (0);
+	while ((n = read(fd, buffer, BUFFER_SIZE)) > 0)
+	{
+		buffer[n] = '\0';
+		if (*rest == NULL)
+		{
+			*rest = malloc(1);
+			if (!*rest)
+				return (1);
+			(*rest)[0] = '\0';
+		}
+		tmp = ft_strjoin(*rest, buffer);
+		if (!tmp)
+			return (1);
+		free(*rest);
+		*rest = tmp;
+		if (ft_strchr(*rest, '\n') != NULL)
+			return (0);
+	}
+	free(buffer);
+	if (n == 0)
+		return (0);
+	if (n < 0)
+	{
+		free(*rest);
+		*rest = NULL;
+		return (1);
+	}
+	return (0);
+}
+
+char *get_next_line(int fd)
+{
+	static char *rest;
+	char *line;
+	int n;
+
+	if (fd < 0 || (BUFFER_SIZE <= 0))
+	{
+		free(rest);
+		rest = NULL;
+		return (NULL);
+	}
+	if (rest && ft_strchr(rest, '\n'))
+	{
+		line = extract_line(rest);
+		if ((!line) || (update_rest(&rest) != 0))
+		{
+			free(rest);
+			if (line)
+				free(line);
+			line = NULL;
+			rest = NULL;
+			return (NULL);
+		}
+		if (rest || (line && ft_strlen(line) > 0 && (line[ft_strlen(line) - 1] == '\n')))
+			return (line);
+	}
+	n = read_line(fd, &rest);
+	if (n != 0)
+	{
+		free(rest);
+		rest = NULL;
+		return (NULL);
+	}
+	//rest = ft_strjoin(line, rest);
+	line = extract_line(rest);
+	if ((!line) || (update_rest(&rest) != 0))
+	{
+		free(rest);
+		if(line)
+			free(line);
+		line = NULL;
+		rest = NULL;
+		return (NULL);
+	}
+	return (line);
+}
 
 int main()
 {
-	char *rest;
-
-	rest = malloc(3);
-	rest[0] = 'A';
-	rest[1] = '\n';
-	rest[2] = 'B';
-	printf("%s",extract_line(rest));
-	update_rest(&rest);
-	printf("%s",rest);
+	int fd = open("file.txt", O_RDONLY);
+	char *line = get_next_line(fd);
+	char *line1 = get_next_line(fd);
+	char *line2 = get_next_line(fd);
+	printf("%s",line);
+	printf("%s",line1);
+	printf("%s",line2);
 }
