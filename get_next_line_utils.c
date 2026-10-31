@@ -6,7 +6,7 @@
 /*   By: achancha <achancha@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/30 14:37:44 by achancha          #+#    #+#             */
-/*   Updated: 2026/10/31 14:43:26 by achancha         ###   ########.fr       */
+/*   Updated: 2026/10/31 16:36:46 by achancha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <sys/types.h>
+
 size_t	ft_strlen(const char *str)
 {
 	size_t	len;
@@ -53,7 +54,7 @@ char	*ft_strjoin(char *str, char *str2)
 		return (NULL);
 	strlen = ft_strlen(str);
 	str2len = ft_strlen(str2);
-	if (strlen > SIZE_MAX - str2len -1)
+	if (strlen > SIZE_MAX - str2len - 1)
 		return (NULL);
 	result = malloc(strlen + str2len + 1);
 	if (!result)
@@ -66,10 +67,10 @@ char	*ft_strjoin(char *str, char *str2)
 	return (result);
 }
 
-char *extract_line(char *rest)
+char	*extract_line(char *rest)
 {
-	size_t len;
-	char *line;
+	size_t	len;
+	char	*line;
 	size_t	i;
 
 	if (!rest)
@@ -92,16 +93,16 @@ char *extract_line(char *rest)
 	return (line);
 }
 
-int update_rest(char **rest)
+int	update_rest(char **rest)
 {
-	char *result;
-	char *nl;
-	size_t len;
-	size_t i;
+	char	*result;
+	char	*nl;
+	size_t	len;
+	size_t	i;
 
 	if (!rest || !*rest)
 		return (1);
-	nl = ft_strchr(*rest,'\n');
+	nl = ft_strchr(*rest, '\n');
 	if ((!nl) || (ft_strlen(nl) == 1))
 	{
 		free(*rest);
@@ -114,28 +115,28 @@ int update_rest(char **rest)
 	if (!(*rest))
 	{
 		*rest = result;
-		return 1;
+		return (1);
 	}
 	(*rest)[len] = '\0';
 	i = 0;
 	while (i < len)
 	{
-		(*rest)[i] = nl[i +1];
+		(*rest)[i] = nl[i + 1];
 		i++;
 	}
-		free(result);
+	free(result);
 	return (0);
 }
 
-int read_line(int fd, char **rest)
+int	read_line(int fd, char **rest)
 {
-	char *buffer;
-	ssize_t n;
-	char *tmp;
+	char	*buffer;
+	ssize_t	n;
+	char	*tmp;
 
 	buffer = malloc(BUFFER_SIZE + 1);
 	if (!buffer)
-		return (0);
+		return (1);
 	while ((n = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
 		buffer[n] = '\0';
@@ -143,16 +144,25 @@ int read_line(int fd, char **rest)
 		{
 			*rest = malloc(1);
 			if (!*rest)
+			{
+				free(buffer);
 				return (1);
+			}
 			(*rest)[0] = '\0';
 		}
 		tmp = ft_strjoin(*rest, buffer);
 		if (!tmp)
+		{
+			free(buffer);
 			return (1);
+		}
 		free(*rest);
 		*rest = tmp;
 		if (ft_strchr(*rest, '\n') != NULL)
+		{
+			free(buffer);
 			return (0);
+		}
 	}
 	free(buffer);
 	if (n == 0)
@@ -166,11 +176,11 @@ int read_line(int fd, char **rest)
 	return (0);
 }
 
-char *get_next_line(int fd)
+char	*get_next_line(int fd)
 {
-	static char *rest;
-	char *line;
-	int n;
+	static char	*rest;
+	char		*line;
+	int			n;
 
 	if (fd < 0 || (BUFFER_SIZE <= 0))
 	{
@@ -200,12 +210,11 @@ char *get_next_line(int fd)
 		rest = NULL;
 		return (NULL);
 	}
-	//rest = ft_strjoin(line, rest);
 	line = extract_line(rest);
 	if ((!line) || (update_rest(&rest) != 0))
 	{
 		free(rest);
-		if(line)
+		if (line)
 			free(line);
 		line = NULL;
 		rest = NULL;
@@ -223,4 +232,8 @@ int main()
 	printf("%s",line);
 	printf("%s",line1);
 	printf("%s",line2);
+	free(line);
+	free(line1);
+	free(line2);
+	close(fd);
 }
