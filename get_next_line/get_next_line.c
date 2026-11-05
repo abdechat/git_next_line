@@ -6,7 +6,7 @@
 /*   By: achancha <achancha@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/02 10:03:14 by achancha          #+#    #+#             */
-/*   Updated: 2026/11/03 15:37:13 by achancha         ###   ########.fr       */
+/*   Updated: 2026/11/04 17:52:54 by achancha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 char	*get_next_line(int fd)
 {
 	static char		buffer[BUFFER_SIZE];
-	static int		ind;
+	static ssize_t	ind;
 	static ssize_t	re;
 	char			*line;
 

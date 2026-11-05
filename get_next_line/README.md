@@ -35,7 +35,7 @@ Replace `42` with the desired buffer size.
 
 The `-D BUFFER_SIZE=42` option defines the buffer size during compilation.
 
-If `BUFFER_SIZE` is not defined during compilation, its default value is `1122`.
+If `BUFFER_SIZE` is not defined during compilation, its default value is `1122`(bonus : 2211).
 
 ### Running the Program
 

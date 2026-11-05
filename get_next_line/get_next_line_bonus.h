@@ -6,7 +6,7 @@
 /*   By: achancha <achancha@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/04 16:40:54 by achancha          #+#    #+#             */
-/*   Updated: 2026/11/04 17:07:40 by achancha         ###   ########.fr       */
+/*   Updated: 2026/11/04 17:52:16 by achancha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,5 @@ typedef struct s_all
 
 char	*get_next_line(int fd);
 char	*add_buffer(char *str, char c);
-char	*ft_free(char *str);
 
 #endif
